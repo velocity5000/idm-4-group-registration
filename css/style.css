@@ -213,7 +213,7 @@ img {
     letter-spacing: 0.015em;
 }
 
-.hero-inner>p {
+.hero-inner > p {
     max-width: 650px;
     margin-top: 28px;
     font-size: 16px;
@@ -476,15 +476,8 @@ img {
 }
 
 @keyframes participantIn {
-    from {
-        opacity: 0;
-        transform: translateY(12px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .participant-card-header {
@@ -721,28 +714,28 @@ img {
     border-bottom: 0;
 }
 
-.summary-row>div {
+.summary-row > div {
     display: flex;
     flex-direction: column;
 }
 
-.summary-row>div strong {
+.summary-row > div strong {
     font-size: 13px;
 }
 
-.summary-row>div span {
+.summary-row > div span {
     margin-top: 2px;
     color: rgba(255, 255, 255, 0.45);
     font-size: 10px;
 }
 
-.summary-row>strong:nth-child(2) {
+.summary-row > strong:nth-child(2) {
     text-align: center;
     color: var(--lavender);
     font-size: 14px;
 }
 
-.summary-row>strong:last-child {
+.summary-row > strong:last-child {
     text-align: right;
     font-size: 14px;
 }
@@ -864,12 +857,12 @@ img {
     pointer-events: none;
 }
 
-.waiver-checkbox input:checked+.custom-checkbox {
+.waiver-checkbox input:checked + .custom-checkbox {
     background: var(--indigo);
     border-color: var(--indigo);
 }
 
-.waiver-checkbox input:checked+.custom-checkbox::after {
+.waiver-checkbox input:checked + .custom-checkbox::after {
     content: "";
     position: absolute;
     width: 5px;
@@ -1121,7 +1114,6 @@ img {
 }
 
 @media (max-width: 900px) {
-
     .portal-header-inner,
     .hero-inner {
         width: min(100% - 40px, 1380px);
@@ -1217,7 +1209,7 @@ img {
         line-height: 0.88;
     }
 
-    .hero-inner>p {
+    .hero-inner > p {
         margin-top: 22px;
         font-size: 13px;
         line-height: 1.7;
@@ -1380,16 +1372,16 @@ img {
         padding: 15px 0;
     }
 
-    .summary-row>div strong {
+    .summary-row > div strong {
         font-size: 10px;
     }
 
-    .summary-row>div span {
+    .summary-row > div span {
         font-size: 8px;
     }
 
-    .summary-row>strong:nth-child(2),
-    .summary-row>strong:last-child {
+    .summary-row > strong:nth-child(2),
+    .summary-row > strong:last-child {
         font-size: 10px;
     }
 
@@ -1512,42 +1504,4 @@ img {
     .summary-row {
         grid-template-columns: 1fr 25px 70px;
     }
-}
-
-/* Group discount alignment and post-submission reference panel */
-.distance-summary + .discount-row {
-    margin: 0 32px;
-    padding: 14px 0;
-    align-items: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-    color: #10b981;
-}
-.distance-summary + .discount-row span {
-    min-width: 0;
-    line-height: 1.45;
-}
-.distance-summary + .discount-row strong {
-    text-align: right;
-    white-space: nowrap;
-}
-.submission-result {
-    display: none;
-    margin-top: 22px;
-    padding: 26px;
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    border-radius: 18px;
-    color: #14532d;
-}
-.submission-result.is-visible { display: block; }
-.submission-result h3 { margin: 0 0 8px; font-size: 22px; }
-.submission-result p { margin: 8px 0; font-size: 14px; line-height: 1.7; }
-.submission-result .result-id { display: inline-block; margin: 8px 0; padding: 12px 16px; background: #fff; border: 1px solid #86efac; border-radius: 10px; color: #14532d; font-size: 20px; font-weight: 800; letter-spacing: .04em; overflow-wrap: anywhere; }
-.submission-result .result-note { font-size: 12px; color: #166534; }
-@media (max-width: 600px) {
-    .distance-summary + .discount-row { margin: 0 20px; align-items: flex-start; font-size: 13px; }
-    .distance-summary + .discount-row strong { font-size: 13px; }
-    .submission-result { padding: 20px; }
-    .submission-result .result-id { font-size: 17px; }
 }

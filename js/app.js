@@ -1,6 +1,6 @@
 /* =========================================================
    IDM HERITAGE RUN 4
-   GROUP REGISTRATION PORTAL
+   PARTNER & GROUP RESERVATION PORTAL
    ========================================================= */
 
 const MAX_PARTICIPANTS = 11;
@@ -32,8 +32,8 @@ const participantCount =
 const grandTotal =
     document.getElementById("grandTotal");
 
-const submitRegistrationBtn =
-    document.getElementById("submitRegistrationBtn");
+const submitReservationBtn =
+    document.getElementById("submitReservationBtn");
 
 const waiverAccepted =
     document.getElementById("waiverAccepted");
@@ -225,13 +225,49 @@ function createParticipant() {
             <div class="form-field">
 
                 <label>
-                    Address <span class="optional-label">(Optional)</span>
+                    Address
+                    <span>*</span>
                 </label>
 
                 <input
                     type="text"
                     name="participant_${participantNumber}_address"
-                    placeholder="Address (optional)"
+                    placeholder="Address"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-field">
+
+                <label>
+                    Emergency Contact Name
+                    <span>*</span>
+                </label>
+
+                <input
+                    type="text"
+                    name="participant_${participantNumber}_emergency_name"
+                    placeholder="Full name"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-field">
+
+                <label>
+                    Emergency Contact Number
+                    <span>*</span>
+                </label>
+
+                <input
+                    type="tel"
+                    name="participant_${participantNumber}_emergency_number"
+                    placeholder="09XXXXXXXXX"
+                    required
                 >
 
             </div>
@@ -694,7 +730,7 @@ function updateAddButton() {
         addParticipantBtn.querySelector(
             "small"
         ).textContent =
-            "Add another runner to this group";
+            "Add another runner to this reservation";
 
     }
 
@@ -706,35 +742,122 @@ function updateAddButton() {
    ========================================================= */
 
 function updateSummary() {
-    const counts = {"5K":0,"10K":0,"21K":0,"42K":0};
-    document.querySelectorAll(".distance-select").forEach(select => {
-        if (Object.prototype.hasOwnProperty.call(counts, select.value)) counts[select.value]++;
+
+    const counts = {
+
+        "5K": 0,
+        "10K": 0,
+        "21K": 0,
+        "42K": 0
+
+    };
+
+
+    document.querySelectorAll(
+        ".distance-select"
+    ).forEach(select => {
+
+        const distance =
+            select.value;
+
+        if (
+            counts.hasOwnProperty(
+                distance
+            )
+        ) {
+
+            counts[distance]++;
+
+        }
+
     });
-    const raw = counts["5K"]*PRICES["5K"] + counts["10K"]*PRICES["10K"] + counts["21K"]*PRICES["21K"] + counts["42K"]*PRICES["42K"];
-    const freeCount = Math.floor(Object.values(counts).reduce((a,b)=>a+b,0)/11);
-    let discount = 0;
-    if (freeCount) {
-        const selectedPrices = [];
-        document.querySelectorAll(".distance-select").forEach(select => {
-            if (PRICES[select.value]) selectedPrices.push(PRICES[select.value]);
-        });
-        selectedPrices.sort((a,b)=>a-b);
-        discount = selectedPrices.slice(0,freeCount).reduce((a,b)=>a+b,0);
-    }
-    [["5K","summary5k","subtotal5k"],["10K","summary10k","subtotal10k"],["21K","summary21k","subtotal21k"],["42K","summary42k","subtotal42k"]].forEach(([d,cid,sid])=>{
-        document.getElementById(cid).textContent=counts[d];
-        document.getElementById(sid).textContent=formatCurrency(counts[d]*PRICES[d]);
-    });
-    document.getElementById("grandTotal").textContent = formatCurrency(Math.max(0,raw-discount));
-    let discountRow=document.getElementById("groupDiscountRow");
-    if(!discountRow){
-        discountRow=document.createElement("div");
-        discountRow.id="groupDiscountRow";
-        discountRow.className="discount-row";
-        const totalEl=document.querySelector(".summary-total");
-        totalEl.parentNode.insertBefore(discountRow,totalEl);
-    }
-    discountRow.innerHTML=`<span>10+1 group discount (${freeCount} free)</span><strong>−${formatCurrency(discount)}</strong>`;
+
+
+    const subtotal5k =
+        counts["5K"] *
+        PRICES["5K"];
+
+    const subtotal10k =
+        counts["10K"] *
+        PRICES["10K"];
+
+    const subtotal21k =
+        counts["21K"] *
+        PRICES["21K"];
+
+    const subtotal42k =
+        counts["42K"] *
+        PRICES["42K"];
+
+
+    const total =
+        subtotal5k +
+        subtotal10k +
+        subtotal21k +
+        subtotal42k;
+
+
+    document.getElementById(
+        "summary5k"
+    ).textContent =
+        counts["5K"];
+
+
+    document.getElementById(
+        "summary10k"
+    ).textContent =
+        counts["10K"];
+
+
+    document.getElementById(
+        "summary21k"
+    ).textContent =
+        counts["21K"];
+
+
+    document.getElementById(
+        "summary42k"
+    ).textContent =
+        counts["42K"];
+
+
+    document.getElementById(
+        "subtotal5k"
+    ).textContent =
+        formatCurrency(
+            subtotal5k
+        );
+
+
+    document.getElementById(
+        "subtotal10k"
+    ).textContent =
+        formatCurrency(
+            subtotal10k
+        );
+
+
+    document.getElementById(
+        "subtotal21k"
+    ).textContent =
+        formatCurrency(
+            subtotal21k
+        );
+
+
+    document.getElementById(
+        "subtotal42k"
+    ).textContent =
+        formatCurrency(
+            subtotal42k
+        );
+
+
+    grandTotal.textContent =
+        formatCurrency(
+            total
+        );
+
 }
 
 
@@ -1037,7 +1160,7 @@ function showFieldError(
 
 
 /* =========================================================
-   VALIDATE GROUP REGISTRATION
+   VALIDATE RESERVATION
    ========================================================= */
 
 function validateReservation() {
@@ -1059,14 +1182,6 @@ function validateReservation() {
 
         document.getElementById(
             "contactNumber"
-        ),
-
-        document.getElementById(
-            "groupEmergencyName"
-        ),
-
-        document.getElementById(
-            "groupEmergencyNumber"
         ),
 
         document.getElementById(
@@ -1321,134 +1436,395 @@ function showToast(message) {
 
 
 /* =========================================================
-   GROUP REGISTRATION SUBMISSION
+   GOOGLE APPS SCRIPT BACKEND
    ========================================================= */
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxH0EZp1l_0iB1AUft9BUrapxES8tSsU3_4w8aQ3i4ihZbLGGvHJY0MUATwe2yiG9f5/exec";
-const paymentProofInput = document.getElementById("paymentProof");
-const fileList = document.getElementById("fileList");
-const uploadStatus = document.getElementById("uploadStatus");
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
-const MAX_UPLOAD_FILES = 3;
-let selectedProofFiles = [];
+
+const BACKEND_URL =
+    "https://script.google.com/macros/s/AKfycbw4zc8YLDvGOxzkslRGO7lMVlHGbnXpnFAuSuTwoPdwGf6jAZqFIgc1uBLRmzeKW3osDg/exec";
+
+
 let isSubmitting = false;
-function renderSelectedFiles() {
-    fileList.innerHTML = "";
-    selectedProofFiles.forEach((file,index) => {
-        const row=document.createElement("div"); row.className="file-item";
-        const label=document.createElement("span"); label.textContent=`${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
-        const remove=document.createElement("button"); remove.type="button"; remove.textContent="Remove";
-        remove.addEventListener("click",()=>{selectedProofFiles.splice(index,1);renderSelectedFiles();});
-        row.append(label,remove); fileList.appendChild(row);
-    });
-    const total=selectedProofFiles.reduce((sum,file)=>sum+file.size,0);
-    uploadStatus.textContent=`${selectedProofFiles.length} of 3 files selected · ${(total/1024/1024).toFixed(2)} MB of 10 MB used`;
-}
-paymentProofInput.addEventListener("change",()=>{
-    const incoming=Array.from(paymentProofInput.files||[]);
-    const combined=[...selectedProofFiles,...incoming], unique=[];
-    combined.forEach(f=>{if(!unique.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified))unique.push(f);});
-    const bytes=unique.reduce((sum,file)=>sum+file.size,0);
-    if(unique.length>3) showToast("You can upload a maximum of 3 files.");
-    else if(bytes>MAX_UPLOAD_BYTES) showToast("The combined file size must not exceed 10 MB.");
-    else if(unique.some(f=>!/\.(jpe?g|png|pdf)$/i.test(f.name))) showToast("Only JPG, PNG, and PDF files are accepted.");
-    else selectedProofFiles=unique;
-    paymentProofInput.value=""; renderSelectedFiles();
-});
-function readFileAsBase64(file) {
-    return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve({name:file.name,mimeType:file.type||"application/octet-stream",size:file.size,base64:String(reader.result).split(",")[1]});reader.onerror=()=>reject(new Error("Could not read "+file.name));reader.readAsDataURL(file);});
-}
+
+
+/* =========================================================
+   COLLECT RESERVATION DATA
+   ========================================================= */
+
 function collectReservationData() {
-    const participants = Array.from(document.querySelectorAll('.participant-card')).map(card => {
-        const value = suffix => {
-            const field = card.querySelector(`[name$="_${suffix}"]`);
-            return field ? String(field.value || '').trim() : '';
-        };
-        const distance = value('distance');
-        return {
-            firstName: value('first_name'),
-            lastName: value('last_name'),
-            gender: value('gender'),
-            birthDate: value('birth_date'),
-            country: value('country'),
-            address: value('address'),
-            emergencyContactName: '',
-            emergencyContactNumber: '',
-            distance,
-            singletSize: value('singlet'),
-            finisherShirtSize: distance === '5K' ? '' : value('shirt'),
-            bibName: value('bib_name')
-        };
-    });
+
+    const participants = [];
+
+
+    document.querySelectorAll(
+        ".participant-card"
+    ).forEach(
+        card => {
+
+            const number =
+                card.dataset.participant;
+
+
+            const getValue =
+                name => {
+
+                    const field =
+                        card.querySelector(
+                            `[name="participant_${number}_${name}"]`
+                        );
+
+
+                    return field
+                        ? field.value.trim()
+                        : "";
+
+                };
+
+
+            participants.push({
+
+                firstName:
+                    getValue(
+                        "first_name"
+                    ),
+
+                lastName:
+                    getValue(
+                        "last_name"
+                    ),
+
+                gender:
+                    getValue(
+                        "gender"
+                    ),
+
+                birthDate:
+                    getValue(
+                        "birth_date"
+                    ),
+
+                country:
+                    getValue(
+                        "country"
+                    ),
+
+                address:
+                    getValue(
+                        "address"
+                    ),
+
+                emergencyContactName:
+                    getValue(
+                        "emergency_name"
+                    ),
+
+                emergencyContactNumber:
+                    getValue(
+                        "emergency_number"
+                    ),
+
+                distance:
+                    getValue(
+                        "distance"
+                    ),
+
+                singletSize:
+                    getValue(
+                        "singlet"
+                    ),
+
+                finisherShirtSize:
+                    getValue(
+                        "shirt"
+                    ),
+
+                bibName:
+                    getValue(
+                        "bib_name"
+                    )
+
+            });
+
+        }
+    );
+
+
     return {
-        contactName: document.getElementById('contactName').value.trim(),
-        email: document.getElementById('contactEmail').value.trim(),
-        contactNumber: document.getElementById('contactNumber').value.trim(),
-        organization: document.getElementById('teamName').value.trim(),
-        groupEmergencyContactName: document.getElementById('groupEmergencyName').value.trim(),
-        groupEmergencyContactNumber: document.getElementById('groupEmergencyNumber').value.trim(),
-        participants,
-        waiverAccepted: waiverAccepted.checked,
-        dataPrivacyAccepted: privacyAccepted.checked
+
+        contactName:
+            document.getElementById(
+                "contactName"
+            ).value.trim(),
+
+        email:
+            document.getElementById(
+                "contactEmail"
+            ).value.trim(),
+
+        contactNumber:
+            document.getElementById(
+                "contactNumber"
+            ).value.trim(),
+
+        organization:
+            document.getElementById(
+                "teamName"
+            ).value.trim(),
+
+        waiverAccepted:
+            waiverAccepted.checked,
+
+        dataPrivacyAccepted:
+            privacyAccepted.checked,
+
+        participants:
+            participants
+
     };
+
 }
-function getGroupPricing() {
-    const distances=Array.from(document.querySelectorAll(".distance-select")).map(s=>s.value).filter(Boolean);
-    const raw=distances.reduce((sum,d)=>sum+(PRICES[d]||0),0);
-    const freeCount=Math.floor(distances.length/11);
-    const prices=distances.map(d=>PRICES[d]).sort((a,b)=>a-b);
-    const discount=prices.slice(0,freeCount).reduce((sum,p)=>sum+p,0);
-    return {rawTotal:raw,freeCount,discount,total:raw-discount};
+
+
+/* =========================================================
+   SEND RESERVATION TO APPS SCRIPT
+   ========================================================= */
+
+async function submitReservationToBackend(
+    data
+) {
+
+    /*
+     * Apps Script Web Apps can redirect their response.
+     * A simple text/plain POST avoids a browser preflight
+     * request.
+     */
+
+    await fetch(
+        BACKEND_URL,
+        {
+
+            method: "POST",
+
+            mode: "no-cors",
+
+            headers: {
+
+                "Content-Type":
+                    "text/plain;charset=utf-8"
+
+            },
+
+            body:
+                JSON.stringify(
+                    data
+                )
+
+        }
+    );
+
 }
-function createGroupRegistrationId() {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let randomPart = "";
-    if (window.crypto && window.crypto.getRandomValues) {
-        const bytes = new Uint8Array(6);
-        window.crypto.getRandomValues(bytes);
-        randomPart = Array.from(bytes, byte => alphabet[byte % alphabet.length]).join("");
-    } else {
-        for (let i = 0; i < 6; i++) randomPart += alphabet[Math.floor(Math.random() * alphabet.length)];
+
+
+/* =========================================================
+   SUBMIT RESERVATION
+   ========================================================= */
+
+async function handleReservationSubmit(
+    event
+) {
+
+    if (event) {
+
+        event.preventDefault();
+
     }
-    return "IDM27-GR-" + Date.now().toString(36).toUpperCase() + randomPart;
-}
-async function submitGroupToBackend(data) {
-    data.paymentProofFiles=await Promise.all(selectedProofFiles.map(readFileAsBase64));
-    data.pricing=getGroupPricing();
-    await fetch(BACKEND_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data)});
-}
-async function handleGroupSubmit(event) {
-    if(event)event.preventDefault(); if(isSubmitting)return;
-    if(!validateReservation()){showToast("Please complete all required fields before submitting.");return;}
-    if(selectedProofFiles.length<1){showToast("Please upload your proof of payment.");paymentProofInput.focus();return;}
-    const totalBytes=selectedProofFiles.reduce((sum,file)=>sum+file.size,0);
-    if(selectedProofFiles.length>3||totalBytes>MAX_UPLOAD_BYTES){showToast("Please check the proof-of-payment file limits.");return;}
-    const data=collectReservationData();
-    data.groupRegistrationId=createGroupRegistrationId();
-    isSubmitting=true;submitRegistrationBtn.disabled=true;
-    const original=submitRegistrationBtn.innerHTML;submitRegistrationBtn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Submitting Registration...';
-    showToast("Submitting group registration. Please wait...");
+
+
+    if (isSubmitting) {
+
+        return;
+
+    }
+
+
+    const valid =
+        validateReservation();
+
+
+    if (!valid) {
+
+        showToast(
+            "Please complete all required fields before continuing."
+        );
+
+        return;
+
+    }
+
+
+    const reservationData =
+        collectReservationData();
+
+
+    isSubmitting = true;
+
+
+    /*
+     * Prevent accidental double submission.
+     */
+
+    submitReservationBtn.disabled =
+        true;
+
+    submitReservationBtn.style.opacity =
+        "0.65";
+
+    submitReservationBtn.style.cursor =
+        "not-allowed";
+
+
+    const originalButtonHTML =
+        submitReservationBtn.innerHTML;
+
+
+    submitReservationBtn.innerHTML = `
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Submitting Reservation...
+    `;
+
+
+    showToast(
+        "Submitting your reservation..."
+    );
+
+
     try {
-        await submitGroupToBackend(data);
-        document.getElementById("submittedGroupId").textContent=data.groupRegistrationId;
-        const resultPanel=document.getElementById("submissionResult");
-        resultPanel.classList.add("is-visible");
-        resultPanel.scrollIntoView({behavior:"smooth",block:"center"});
-        showToast("Submission request sent. Keep your Group Registration ID.");
-        submitRegistrationBtn.innerHTML='<i class="fa-solid fa-check"></i> Registration Submitted';
-    } catch(error) {
-        console.error(error);isSubmitting=false;submitRegistrationBtn.disabled=false;submitRegistrationBtn.innerHTML=original;showToast("We couldn't prepare the submission. Please try again.");
+
+        await submitReservationToBackend(
+            reservationData
+        );
+
+
+        /*
+         * The Apps Script Web App processes the POST,
+         * but the browser does not expose its response
+         * because of cross-origin restrictions.
+         *
+         * The Google Sheet is the source of truth during
+         * this testing phase.
+         */
+
+        showToast(
+            "Reservation submitted successfully. Your reservation has been recorded."
+        );
+
+
+        submitReservationBtn.innerHTML = `
+            <i class="fa-solid fa-check"></i>
+            Reservation Submitted
+        `;
+
+
+        /*
+         * Keep the button disabled after submission.
+         * This prevents accidental duplicate reservations.
+         */
+
+
+    } catch (error) {
+
+        console.error(
+            "Reservation submission error:",
+            error
+        );
+
+
+        isSubmitting = false;
+
+
+        submitReservationBtn.disabled =
+            false;
+
+        submitReservationBtn.style.opacity =
+            "1";
+
+        submitReservationBtn.style.cursor =
+            "pointer";
+
+        submitReservationBtn.innerHTML =
+            originalButtonHTML;
+
+
+        showToast(
+            "We couldn't submit your reservation. Please try again."
+        );
+
     }
+
 }
-submitRegistrationBtn.addEventListener("click",handleGroupSubmit);
-renderSelectedFiles();
+
 
 /* =========================================================
    EVENT LISTENERS
    ========================================================= */
-addParticipantBtn.addEventListener("click", createParticipant);
-waiverAccepted.addEventListener("change", () => {
-    if (waiverAccepted.checked) waiverAccepted.closest(".waiver-checkbox").style.background = "";
-});
-privacyAccepted.addEventListener("change", () => {
-    if (privacyAccepted.checked) privacyAccepted.closest(".waiver-checkbox").style.background = "";
-});
+
+addParticipantBtn.addEventListener(
+    "click",
+    () => {
+
+        createParticipant();
+
+    }
+);
+
+
+waiverAccepted.addEventListener(
+    "change",
+    () => {
+
+        if (waiverAccepted.checked) {
+
+            waiverAccepted
+                .closest(
+                    ".waiver-checkbox"
+                )
+                .style.background =
+                "";
+
+        }
+
+    }
+);
+
+
+privacyAccepted.addEventListener(
+    "change",
+    () => {
+
+        if (privacyAccepted.checked) {
+
+            privacyAccepted
+                .closest(
+                    ".waiver-checkbox"
+                )
+                .style.background =
+                "";
+
+        }
+
+    }
+);
+
+
+submitReservationBtn.addEventListener(
+    "click",
+    handleReservationSubmit
+);
+
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+createParticipant();
+
+updateSummary();

@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>IDM Heritage Run 4 | Group Registration</title>
+    <title>IDM Heritage Run 4 | Partner & Group Reservation</title>
 
     <meta name="description"
-        content="Group registration portal for Iloilo Dinagyang Marathon Heritage Run 4, January 17, 2027.">
+        content="Partner and group reservation portal for Iloilo Dinagyang Marathon Heritage Run 4, January 17, 2027.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,41 +20,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
     <link rel="stylesheet" href="css/style.css">
-    <style>
-      .payment-methods{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin:22px 0}
-      .payment-method{border:1px solid #e5e7eb;border-radius:14px;padding:16px;text-align:center;background:#fff}
-      .payment-method h3{font-size:15px;margin-bottom:12px}
-      .payment-account-details{min-height:94px;margin:0 0 12px;padding:12px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:9px;text-align:left;font-size:12px;line-height:1.65;color:#374151}
-      .payment-account-details strong{color:#111827}
-      .payment-method img{width:220px;height:auto;max-height:250px;object-fit:contain;margin:0 auto}
-      .payment-methods{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:22px;margin:28px 0 30px}
-      .payment-method{min-width:0;border:1px solid #e5e7eb;border-radius:16px;padding:24px;text-align:center;background:#fff;box-shadow:0 8px 24px rgba(11,12,37,.06)}
-      .payment-method h3{font-size:16px;margin:0 0 16px;color:#101126}
-      .payment-account-details{min-height:92px;margin:0 0 18px;padding:16px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;text-align:left;font-size:13px;line-height:1.8;color:#374151;overflow-wrap:anywhere}
-      .payment-account-details strong{color:#111827}
-      .payment-method img{width:min(100%,260px);height:auto;max-height:280px;object-fit:contain;margin:8px auto 0}
-      .upload-panel{margin-top:30px;padding:26px;border:1px dashed #a5b4fc;background:#f8faff;border-radius:16px;color:#101126}
-      .upload-panel label{display:block;margin:0 0 10px;color:#101126;font-size:15px}.upload-panel label span{color:#dc2626}
-      .upload-panel p,.upload-panel small{display:block;font-size:13px;line-height:1.7;color:#596176;margin-top:7px}
-      .upload-panel input[type=file]{display:block;width:100%;margin:18px 0 14px;padding:12px;background:#fff;color:#101126;border:1px solid #cfd3e1;border-radius:9px;line-height:1.5}
-      .upload-panel input[type=file]::file-selector-button{margin-right:14px;padding:9px 13px;border:0;border-radius:7px;background:#e8e8ff;color:#11127f;font-weight:700;cursor:pointer}
-      .file-list{display:grid;gap:12px;margin:16px 0}
-      .file-item{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 16px;background:#fff;border:1px solid #d9ddeb;border-radius:10px;font-size:13px;line-height:1.5;color:#101126;overflow-wrap:anywhere;box-shadow:0 2px 6px rgba(11,12,37,.03)}
-      .file-item span{display:block;min-width:0;flex:1;color:#101126;font-weight:600;overflow-wrap:anywhere;word-break:break-word}
-      .file-item button{border:0;background:#fee2e2;color:#991b1b;border-radius:7px;padding:8px 12px;flex-shrink:0;font-weight:700}
-      .upload-panel #uploadStatus{margin-top:12px;color:#596176;font-size:12px}
-      @media(max-width:600px){.payment-method{padding:18px}.upload-panel{padding:18px}.file-item{align-items:flex-start}}
-      .discount-row{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:0 32px;padding:14px 0;color:#10b981;font-weight:800;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}
-      .discount-row span{min-width:0;line-height:1.45}
-      .discount-row strong{white-space:nowrap;text-align:right}
-      .submission-result{display:none;margin-top:22px;padding:26px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:18px;color:#14532d}
-      .submission-result.is-visible{display:block}
-      .submission-result h3{font-size:22px;margin:0 0 8px}
-      .submission-result p{font-size:14px;line-height:1.7;margin:8px 0}
-      .submission-result .result-id{display:inline-block;margin:8px 0;padding:12px 16px;background:#fff;border:1px solid #86efac;border-radius:10px;color:#14532d;font-size:20px;font-weight:800;letter-spacing:.04em;overflow-wrap:anywhere}
-      .submission-result .result-note{font-size:12px;color:#166534}
-      @media(max-width:600px){.discount-row{margin:0 20px;align-items:flex-start;font-size:13px}.discount-row strong{font-size:13px}.submission-result{padding:20px}.submission-result .result-id{font-size:17px}}
-    </style>
 </head>
 
 <body>
@@ -68,7 +33,7 @@
 
                 <div class="brand-text">
                     <span>HERITAGE RUN 4</span>
-                    <strong>GROUP REGISTRATION</strong>
+                    <strong>PARTNER RESERVATION</strong>
                 </div>
             </div>
 
@@ -95,12 +60,13 @@
                 </div>
 
                 <h1>
-                    GROUP<br>
-                    REGISTRATION
+                    PARTNER &amp;<br>
+                    GROUP RESERVATION
                 </h1>
 
                 <p>
-                    Register your club, team, organization, company, or group for Heritage Run 4 and submit payment proof in one step.
+                    Reserve race slots for your club, team, organization,
+                    company, or group for Heritage Run 4.
                 </p>
 
                 <div class="hero-meta">
@@ -129,10 +95,12 @@
                 </div>
 
                 <div>
-                    <strong>Group 10+1 Registration</strong>
+                    <strong>Reservation Portal</strong>
 
                     <p>
-                        Register 11 participants and receive one free registration. The free slot is automatically assigned to the participant with the lowest registration fee, regardless of distance. Upload proof of payment for the calculated group total before submitting.
+                        This portal is for partner, club, team, sponsor,
+                        organization, and group reservations.
+                        No payment is collected directly through this form.
                     </p>
                 </div>
 
@@ -147,13 +115,13 @@
 
                     <div>
                         <span class="section-kicker">
-                            GROUP REGISTRATION DETAILS
+                            RESERVATION DETAILS
                         </span>
 
-                        <h2>Group Contact</h2>
+                        <h2>Reservation Contact</h2>
 
                         <p>
-                            Tell us who is coordinating this group registration.
+                            Tell us who is coordinating this reservation.
                         </p>
                     </div>
 
@@ -171,7 +139,7 @@
                             </label>
 
                             <input type="text" id="contactName" name="contactName"
-                                placeholder="Enter the group contact's full name" required>
+                                placeholder="Enter the reservation contact's full name" required>
                         </div>
 
 
@@ -196,24 +164,6 @@
                                 required>
                         </div>
 
-
-                        <div class="form-field">
-                            <label for="groupEmergencyName">
-                                Group Emergency Contact Name
-                                <span>*</span>
-                            </label>
-                            <input type="text" id="groupEmergencyName" name="groupEmergencyName"
-                                placeholder="Emergency contact full name" required>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="groupEmergencyNumber">
-                                Group Emergency Contact Number
-                                <span>*</span>
-                            </label>
-                            <input type="tel" id="groupEmergencyNumber" name="groupEmergencyNumber"
-                                placeholder="09XXXXXXXXX" required>
-                        </div>
 
                         <div class="form-field full-width">
                             <label for="teamName">
@@ -249,7 +199,7 @@
                         <h2>Participants</h2>
 
                         <p>
-                            Add the runners included in this group registration.
+                            Add the runners included in this reservation.
                         </p>
                     </div>
 
@@ -273,7 +223,7 @@
 
                         <span>
                             <strong>Add Participant</strong>
-                            <small>Add another runner to this group</small>
+                            <small>Add another runner to this reservation</small>
                         </span>
                     </button>
 
@@ -290,10 +240,10 @@
 
                         <div>
                             <span class="section-kicker">
-                                GROUP COST SUMMARY
+                                RESERVATION SUMMARY
                             </span>
 
-                            <h2>Your Group Registration</h2>
+                            <h2>Your Reservation</h2>
                         </div>
 
                         <div class="summary-status">
@@ -353,43 +303,19 @@
 
 
                     <div class="summary-total">
-                        <span>TOTAL TO PAY</span>
+                        <span>TOTAL RESERVATION</span>
                         <strong id="grandTotal">₱0</strong>
                     </div>
 
 
                     <div class="payment-note">
                         <i class="fa-solid fa-circle-info"></i>
-                        <p>Group 10+1: when 11 participants are registered, the cheapest registration is free. The discount is applied automatically to the lowest-priced distance. Pay the total shown above and upload your proof of payment below.</p>
-                    </div>
 
-                    <div class="payment-methods">
-                        <div class="payment-method">
-                            <h3>AUB QR Code</h3>
-                            <div class="payment-account-details">
-                                <strong>Account Name:</strong> VELOCITY 5000 MANAGEMENT INC.<br>
-                                <strong>Savings Account Number:</strong> 222010001401<br>
-                                <strong>BIC/Swift Code:</strong> AUBKPHMM
-                            </div>
-                            <img src="images/AUB-qr-code.png" alt="AUB payment QR code" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-                            <p class="qr-missing-note" style="display:none">Add <code>images/AUB-qr-code.png</code> to display this QR code.</p>
-                        </div>
-                        <div class="payment-method">
-                            <h3>GCASH QR Code</h3>
-                            <div class="payment-account-details">
-                                <strong>Account Name:</strong> GP Velocity 5000 Management Inc
-                            </div>
-                            <img src="images/gcash-qr-code.jpg" alt="GCash payment QR code" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-                            <p class="qr-missing-note" style="display:none">Add <code>images/gcash-qr-code.jpg</code> to display this QR code.</p>
-                        </div>
-                    </div>
-
-                    <div class="upload-panel">
-                        <label for="paymentProof"><strong>Proof of Payment <span>*</span></strong></label>
-                        <p>Upload up to 3 files. Combined file size must not exceed 10 MB. Accepted: JPG, PNG, PDF.</p>
-                        <input type="file" id="paymentProof" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" multiple required>
-                        <div id="fileList" class="file-list" aria-live="polite"></div>
-                        <small id="uploadStatus">0 of 3 files selected · 0 MB of 10 MB used</small>
+                        <p>
+                            No payment is collected through this portal.
+                            Payment arrangements will be coordinated
+                            separately after your reservation is submitted.
+                        </p>
                     </div>
 
                 </div>
@@ -412,7 +338,7 @@
 
                         <p>
                             Please read the acknowledgment carefully before
-                            submitting the group registration.
+                            submitting the reservation.
                         </p>
                     </div>
 
@@ -493,14 +419,15 @@
                         <p>
                             <strong>8. Data Privacy.</strong>
                             I understand that the personal information provided
-                            through this group registration portal, including but not
+                            through this reservation portal, including but not
                             limited to names, contact information, birth dates,
                             gender, address, emergency contact details, race
                             distance, and apparel sizes, will be collected and
                             processed by <strong>Velocity 5000 Management Inc.</strong>
                             and authorized event personnel for legitimate purposes
                             related to the Iloilo Dinagyang Marathon 4 Heritage
-                            Run 2027, including group registration processing, race administration, participant
+                            Run 2027, including reservation and registration
+                            processing, race administration, participant
                             identification, race-day operations, safety and
                             emergency response, communication, payment
                             verification, and other purposes directly related
@@ -613,32 +540,24 @@
                     <div class="submit-copy">
 
                         <span class="section-kicker">
-                            READY TO REGISTER?
+                            READY TO RESERVE?
                         </span>
 
-                        <h2>Review Your Group Registration</h2>
+                        <h2>Review Your Details</h2>
 
                         <p>
                             Please make sure all participant information
-                            is correct before submitting your group registration.
+                            is correct before submitting your reservation.
                         </p>
 
                     </div>
 
 
-                    <button type="button" class="submit-btn" id="submitRegistrationBtn">
-                        <span>Submit Group Registration</span>
+                    <button type="button" class="submit-btn" id="submitReservationBtn">
+                        <span>Submit Reservation</span>
                         <i class="fa-solid fa-arrow-right"></i>
                     </button>
 
-                </div>
-
-                <div class="submission-result" id="submissionResult" role="status" aria-live="polite">
-                    <h3><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Group registration submitted</h3>
-                    <p>Your Group Registration ID is:</p>
-                    <div class="result-id" id="submittedGroupId">IDM27-GR-</div>
-                    <p>Please keep this ID for your records. A receipt email will be sent to the group contact email address.</p>
-                    <p class="result-note">This confirms that the submission request was sent. Your payment is still pending organizer review. If there are any issues with the payment or submitted information, the organizer will contact you.</p>
                 </div>
 
             </section>
@@ -685,7 +604,7 @@
         <i class="fa-solid fa-circle-check"></i>
 
         <span id="toastMessage">
-            Your group registration is ready.
+            Your reservation is ready.
         </span>
     </div>
 
