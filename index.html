@@ -95,12 +95,12 @@
                 </div>
 
                 <h1>
-                    GROUP<br>
+                    HERITAGE RUN 4<br>
                     REGISTRATION
                 </h1>
 
                 <p>
-                    Register your club, team, organization, company, or group for Heritage Run 4 and submit payment proof in one step.
+                    Register individually or with your running group for January 17, 2027.
                 </p>
 
                 <div class="hero-meta">
@@ -139,7 +139,8 @@
             </div>
 
 
-            <section class="form-section">
+            <section class="registration-mode" aria-label="Registration type"><h2>Choose registration type</h2><div class="mode-options"><label><input type="radio" name="registrationMode" value="individual" checked><span>Individual Registration<small>One runner</small></span></label><label><input type="radio" name="registrationMode" value="group"><span>Group Registration<small>Up to 11 runners · 10+1 offer</small></span></label></div></section>
+            <section class="form-section" id="groupContactSection">
 
                 <div class="section-heading">
 
@@ -235,7 +236,7 @@
             </section>
 
 
-            <section class="form-section">
+            <section class="form-section" id="participantsSection">
 
                 <div class="section-heading participants-heading">
 
@@ -253,7 +254,7 @@
                         </p>
                     </div>
 
-                    <div class="participant-counter">
+                    <div class="participant-counter" id="participantCounterWrap">
                         <strong id="participantCount">01</strong>
                         <span>/ 11</span>
                     </div>
@@ -264,7 +265,7 @@
                 <div id="participantsContainer"></div>
 
 
-                <div class="add-participant-wrap">
+                <div class="add-participant-wrap" id="addParticipantWrap">
 
                     <button type="button" class="add-participant-btn" id="addParticipantBtn">
                         <span class="add-icon">
@@ -358,7 +359,7 @@
                     </div>
 
 
-                    <div class="payment-note">
+                    <div class="payment-note" id="groupPaymentNote">
                         <i class="fa-solid fa-circle-info"></i>
                         <p>Group 10+1: when 11 participants are registered, the cheapest registration is free. The discount is applied automatically to the lowest-priced distance. Pay the total shown above and upload your proof of payment below.</p>
                     </div>
@@ -387,7 +388,7 @@
                     <div class="upload-panel">
                         <label for="paymentProof"><strong>Proof of Payment <span>*</span></strong></label>
                         <p>Upload up to 3 files. Combined file size must not exceed 10 MB. Accepted: JPG, PNG, PDF.</p>
-                        <input type="file" id="paymentProof" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" multiple required>
+                        <div class="capture-actions"><button type="button" id="takePhotoBtn" class="camera-action">📷 Take a Photo</button><span>or choose an existing image / PDF</span></div><div id="cameraPanel" class="camera-panel" hidden><video id="cameraPreview" autoplay playsinline muted></video><div class="camera-controls"><button type="button" id="capturePhotoBtn">Capture Photo</button><button type="button" id="closeCameraBtn">Cancel</button></div></div><input type="file" id="paymentProof" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" multiple required>
                         <div id="fileList" class="file-list" aria-live="polite"></div>
                         <small id="uploadStatus">0 of 3 files selected · 0 MB of 10 MB used</small>
                     </div>
@@ -638,7 +639,7 @@
                     <p>Your Group Registration ID is:</p>
                     <div class="result-id" id="submittedGroupId">IDM27-GR-</div>
                     <p>Please keep this ID for your records. A receipt email will be sent to the group contact email address.</p>
-                    <p class="result-note">This confirms that the submission request was sent. Your payment is still pending organizer review. If there are any issues with the payment or submitted information, the organizer will contact you.</p>
+                    <p class="result-note">This confirms that the submission request was sent. The organizer will contact you if there are issues with the payment or submitted information. If there are any issues with the payment or submitted information, the organizer will contact you.</p>
                 </div>
 
             </section>

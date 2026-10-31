@@ -70,6 +70,7 @@ function createOptions(options, placeholder) {
 
 function createParticipant() {
 
+    if (isIndividualMode() && document.querySelectorAll(".participant-card").length >= 1) return;
     if (participantNumber >= MAX_PARTICIPANTS) {
         return;
     }
@@ -1041,6 +1042,7 @@ function showFieldError(
    ========================================================= */
 
 function validateReservation() {
+    if (isIndividualMode()) syncIndividualContact();
 
     let valid = true;
 
@@ -1084,6 +1086,7 @@ function validateReservation() {
             }
 
 
+            if (isIndividualMode() && field.id === "contactName") return;
             const result =
                 validateField(
                     field
@@ -1358,6 +1361,7 @@ function readFileAsBase64(file) {
     return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve({name:file.name,mimeType:file.type||"application/octet-stream",size:file.size,base64:String(reader.result).split(",")[1]});reader.onerror=()=>reject(new Error("Could not read "+file.name));reader.readAsDataURL(file);});
 }
 function collectReservationData() {
+    if (isIndividualMode()) syncIndividualContact();
     const participants = Array.from(document.querySelectorAll('.participant-card')).map(card => {
         const value = suffix => {
             const field = card.querySelector(`[name$="_${suffix}"]`);
@@ -1371,8 +1375,8 @@ function collectReservationData() {
             birthDate: value('birth_date'),
             country: value('country'),
             address: value('address'),
-            emergencyContactName: '',
-            emergencyContactNumber: '',
+            emergencyContactName: isIndividualMode() ? document.getElementById('groupEmergencyName').value.trim() : '',
+            emergencyContactNumber: isIndividualMode() ? document.getElementById('groupEmergencyNumber').value.trim() : '',
             distance,
             singletSize: value('singlet'),
             finisherShirtSize: distance === '5K' ? '' : value('shirt'),
@@ -1383,6 +1387,7 @@ function collectReservationData() {
         contactName: document.getElementById('contactName').value.trim(),
         email: document.getElementById('contactEmail').value.trim(),
         contactNumber: document.getElementById('contactNumber').value.trim(),
+        registrationType: isIndividualMode() ? 'individual' : 'group',
         organization: document.getElementById('teamName').value.trim(),
         groupEmergencyContactName: document.getElementById('groupEmergencyName').value.trim(),
         groupEmergencyContactNumber: document.getElementById('groupEmergencyNumber').value.trim(),
@@ -1394,7 +1399,7 @@ function collectReservationData() {
 function getGroupPricing() {
     const distances=Array.from(document.querySelectorAll(".distance-select")).map(s=>s.value).filter(Boolean);
     const raw=distances.reduce((sum,d)=>sum+(PRICES[d]||0),0);
-    const freeCount=Math.floor(distances.length/11);
+    const freeCount=isIndividualMode() ? 0 : Math.floor(distances.length/11);
     const prices=distances.map(d=>PRICES[d]).sort((a,b)=>a-b);
     const discount=prices.slice(0,freeCount).reduce((sum,p)=>sum+p,0);
     return {rawTotal:raw,freeCount,discount,total:raw-discount};
@@ -1426,7 +1431,7 @@ async function handleGroupSubmit(event) {
     data.groupRegistrationId=createGroupRegistrationId();
     isSubmitting=true;submitRegistrationBtn.disabled=true;
     const original=submitRegistrationBtn.innerHTML;submitRegistrationBtn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Submitting Registration...';
-    showToast("Submitting group registration. Please wait...");
+    showToast("Submitting registration. Please wait...");
     try {
         await submitGroupToBackend(data);
         document.getElementById("submittedGroupId").textContent=data.groupRegistrationId;
@@ -1451,4 +1456,158 @@ waiverAccepted.addEventListener("change", () => {
 });
 privacyAccepted.addEventListener("change", () => {
     if (privacyAccepted.checked) privacyAccepted.closest(".waiver-checkbox").style.background = "";
+});
+
+/* Individual / group mode: preserve the existing backend and sheet columns. */
+function isIndividualMode() {
+    return document.querySelector('input[name="registrationMode"]:checked')?.value !== 'group';
+}
+
+function syncIndividualContact() {
+    const card = document.querySelector('.participant-card');
+    if (!card) return;
+    const first = card.querySelector('[name$="_first_name"]')?.value.trim() || '';
+    const last = card.querySelector('[name$="_last_name"]')?.value.trim() || '';
+    const full = [first, last].filter(Boolean).join(' ');
+    document.getElementById('contactName').value = full;
+}
+
+function moveIndividualContactFields() {
+    const card = document.querySelector('.participant-card');
+    const contactSection = document.getElementById('groupContactSection');
+    // Always hide the group-only section, even if a participant card is not ready yet.
+    contactSection.hidden = true;
+    if (!card) return;
+    const grid = card.querySelector('.participant-grid');
+    if (!grid) return;
+
+    ['contactEmail', 'contactNumber', 'groupEmergencyName', 'groupEmergencyNumber', 'teamName'].forEach(id => {
+        const field = document.getElementById(id)?.closest('.form-field');
+        if (!field) return;
+        grid.appendChild(field);
+        const label = field.querySelector('label');
+        if (!label) return;
+        if (id === 'contactEmail') label.innerHTML = 'Email Address <span>*</span>';
+        if (id === 'contactNumber') label.innerHTML = 'Contact Number <span>*</span>';
+        if (id === 'groupEmergencyName') label.innerHTML = 'Emergency Contact Name <span>*</span>'; 
+        if (id === 'groupEmergencyNumber') label.innerHTML = 'Emergency Contact Number <span>*</span>';
+        if (id === 'teamName') label.innerHTML = 'Club / Team / Organization <span class="optional-label">(Optional)</span>'; 
+    });
+}
+
+function restoreGroupContactFields() {
+    const section = document.getElementById('groupContactSection');
+    const grid = section.querySelector('.form-grid');
+    const fields = ['contactEmail', 'contactNumber', 'groupEmergencyName', 'groupEmergencyNumber', 'teamName']
+        .map(id => document.getElementById(id)?.closest('.form-field')).filter(Boolean);
+    const nameField = document.getElementById('contactName').closest('.form-field');
+    const emergencyNameField = document.getElementById('groupEmergencyName').closest('.form-field');
+    // Restore the original group-contact field order and labels.
+    nameField.after(fields[0], fields[1], fields[2], fields[3], fields[4]);
+    fields[0].querySelector('label').innerHTML = 'Email Address <span>*</span>';
+    fields[1].querySelector('label').innerHTML = 'Contact Number <span>*</span>';
+    fields[2].querySelector('label').innerHTML = 'Group Emergency Contact Name <span>*</span>';
+    fields[3].querySelector('label').innerHTML = 'Group Emergency Contact Number <span>*</span>';
+    fields[4].querySelector('label').innerHTML = 'Club / Team / Organization';
+    section.hidden = false;
+}
+
+function applyRegistrationMode() {
+    const individual = isIndividualMode();
+    const participantSection = document.getElementById('participantsSection');
+    const participantHeading = participantSection.querySelector('.participants-heading');
+    const title = participantSection.querySelector('.participant-title strong');
+    const subtitle = participantSection.querySelector('.participant-title span');
+
+    if (individual) {
+        // An individual submission must contain exactly one runner.
+        while (document.querySelectorAll('.participant-card').length > 1) {
+            document.querySelectorAll('.participant-card')[1].remove();
+        }
+        moveIndividualContactFields();
+        syncIndividualContact();
+        participantHeading.querySelector('.section-kicker').textContent = 'INDIVIDUAL REGISTRATION';
+        participantHeading.querySelector('h2').textContent = 'Runner Information';
+        participantHeading.querySelector('p').textContent = 'Enter the details of the person you are registering.';
+        if (title) title.textContent = 'Your Information';
+        if (subtitle) subtitle.textContent = 'Runner details';
+        document.querySelector('.summary-header h2').textContent = 'Your Registration';
+        document.querySelector('.summary-header .section-kicker').textContent = 'REGISTRATION COST SUMMARY';
+        const reviewHeading = document.querySelector('.submit-copy h2');
+        if (reviewHeading) reviewHeading.textContent = 'Review Your Registration';
+        document.querySelector('#submitRegistrationBtn span').textContent = 'Submit Individual Registration';
+        const resultHeading = document.querySelector('#submissionResult h3');
+        if (resultHeading) resultHeading.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Individual registration submitted';
+        document.querySelector('#submissionResult p').textContent = 'Your Registration ID is:';
+    } else {
+        restoreGroupContactFields();
+        participantHeading.querySelector('.section-kicker').textContent = 'RUNNER INFORMATION';
+        participantHeading.querySelector('h2').textContent = 'Participants';
+        participantHeading.querySelector('p').textContent = 'Add the runners included in this group registration.';
+        if (title) title.textContent = 'Participant 01';
+        if (subtitle) subtitle.textContent = 'Runner information';
+        document.querySelector('.summary-header h2').textContent = 'Your Group Registration';
+        document.querySelector('.summary-header .section-kicker').textContent = 'GROUP COST SUMMARY';
+        const reviewHeading = document.querySelector('.submit-copy h2');
+        if (reviewHeading) reviewHeading.textContent = 'Review Your Group Registration';
+        document.querySelector('#submitRegistrationBtn span').textContent = 'Submit Group Registration';
+        const resultHeading = document.querySelector('#submissionResult h3');
+        if (resultHeading) resultHeading.innerHTML = '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Group registration submitted';
+        document.querySelector('#submissionResult p').textContent = 'Your Group Registration ID is:';
+    }
+
+    document.getElementById('addParticipantWrap').hidden = individual;
+    document.getElementById('participantCounterWrap').hidden = individual;
+    document.getElementById('groupPaymentNote').hidden = individual;
+    document.querySelector('.registration-mode').classList.toggle('is-individual', individual);
+    document.querySelectorAll('.remove-participant').forEach(button => button.hidden = individual);
+    updateParticipantCounter();
+    updateAddButton();
+    updateSummary();
+}
+
+document.querySelectorAll('input[name="registrationMode"]').forEach(radio => {
+    radio.addEventListener('change', applyRegistrationMode);
+});
+
+// Ensure the first runner card exists before applying the default Individual mode.
+if (!document.querySelector('.participant-card')) createParticipant();
+applyRegistrationMode();
+
+/* Camera capture: uses browser camera on HTTPS; falls back to device camera/file picker. */
+let activeCameraStream = null;
+const cameraPanel = document.getElementById('cameraPanel');
+const cameraVideo = document.getElementById('cameraPreview');
+const takePhotoBtn = document.getElementById('takePhotoBtn');
+const mobileCaptureInput = document.createElement('input');
+mobileCaptureInput.type = 'file'; mobileCaptureInput.accept = 'image/*'; mobileCaptureInput.capture = 'environment'; mobileCaptureInput.hidden = true;
+document.body.appendChild(mobileCaptureInput);
+mobileCaptureInput.addEventListener('change',()=>{
+    const files = Array.from(mobileCaptureInput.files||[]);
+    addProofFiles(files); mobileCaptureInput.value='';
+});
+function addProofFiles(files) {
+    const combined=[...selectedProofFiles,...files];
+    if(combined.length>MAX_UPLOAD_FILES || combined.reduce((n,f)=>n+f.size,0)>MAX_UPLOAD_BYTES){showToast('Maximum 3 files and 10 MB combined.');return;}
+    if(files.some(f=>!(/image\/(jpeg|png)/.test(f.type)||/\.(jpe?g|png)$/i.test(f.name)))){showToast('Camera images must be JPG or PNG.');return;}
+    selectedProofFiles=combined;renderSelectedFiles();
+}
+function closeCamera() { if(activeCameraStream)activeCameraStream.getTracks().forEach(t=>t.stop()); activeCameraStream=null;cameraVideo.srcObject=null;cameraPanel.hidden=true; }
+takePhotoBtn.addEventListener('click',async()=>{
+    if (!navigator.mediaDevices?.getUserMedia) {mobileCaptureInput.click();return;}
+    try {activeCameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});cameraVideo.srcObject=activeCameraStream;cameraPanel.hidden=false;}
+    catch(e){mobileCaptureInput.click();}
+});
+document.getElementById('closeCameraBtn').addEventListener('click',closeCamera);
+document.getElementById('capturePhotoBtn').addEventListener('click',()=>{
+    if(!cameraVideo.videoWidth){showToast('Wait for the camera preview to load.');return;}
+    const canvas=document.createElement('canvas');const scale=Math.min(1,1600/cameraVideo.videoWidth);
+    canvas.width=Math.round(cameraVideo.videoWidth*scale);canvas.height=Math.round(cameraVideo.videoHeight*scale);
+    canvas.getContext('2d').drawImage(cameraVideo,0,0,canvas.width,canvas.height);
+    canvas.toBlob(blob=>{if(blob)addProofFiles([new File([blob],`payment-photo-${Date.now()}.jpg`,{type:'image/jpeg'})]);closeCamera();},'image/jpeg',0.82);
+});
+
+// Keep the legacy contact-name fields synchronized for individual registrations.
+document.addEventListener('input', event => {
+    if (isIndividualMode() && event.target.matches('[name$="_first_name"], [name$="_last_name"]')) syncIndividualContact();
 });

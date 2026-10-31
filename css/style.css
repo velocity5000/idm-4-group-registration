@@ -1551,3 +1551,52 @@ img {
     .submission-result { padding: 20px; }
     .submission-result .result-id { font-size: 17px; }
 }
+
+/* Heritage Run 4 — gold medal / heritage wood poster-inspired theme */
+:root {
+    --navy: #17130b;
+    --navy-deep: #0d0b07;
+    --navy-soft: #292014;
+    --indigo: #9a6815;
+    --indigo-light: #bd861f;
+    --lavender: #f2c65c;
+    --lavender-soft: #fff0bd;
+    --heritage-gold: #e7b84f;
+    --heritage-gold-light: #ffdf83;
+    --heritage-gold-deep: #9a6815;
+    --heritage-cream: #fff8e8;
+}
+body { background:#f8f0dc; color:#211a0e; font-size:17px; }
+.portal-header { background:#17130b; color:#fff; }
+.brand-text span,.header-event-date strong { color:#f2c65c; }
+.portal-hero {
+    background:linear-gradient(125deg,#f8d978 0%,#edc15a 48%,#d9a33c 100%) !important;
+    color:#21180b !important;
+}
+.portal-hero h1,.portal-hero p,.hero-eyebrow { color:#21180b !important; }
+.portal-hero::before { opacity:.16; }
+.portal-hero::after { border-color:rgba(80,52,10,.18); box-shadow:0 0 0 80px rgba(80,52,10,.035),0 0 0 160px rgba(80,52,10,.025); }
+.section-number,.participant-badge { background:#17130b !important; color:#f2c65c !important; }
+.section-kicker { color:#95620f !important; }
+.form-card,.participant-card { background:#fffdf7; box-shadow:0 9px 28px rgba(83,57,12,.09); }
+.form-field label { font-size:16px !important; font-weight:700; }
+.form-field input,.form-field select { min-height:58px; font-size:18px !important; color:#211a0e; background:#fffefa; }
+.form-field small,.payment-note p { font-size:15px; }
+button { min-height:48px; }
+button.primary,.submit-button,.registration-mode button { background:#a87316; color:#fff; }
+.registration-mode { background:#fffdf7; border:1px solid #e8d39b; border-radius:22px; padding:24px; margin:22px 0 30px; box-shadow:0 8px 26px rgba(100,72,20,.08); }
+.registration-mode h2 { font-size:24px; margin:0 0 16px; color:#211a0e; }
+.mode-options { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.mode-options label { cursor:pointer; display:flex; gap:12px; align-items:center; border:2px solid #e8d8b2; border-radius:15px; padding:16px; background:#fffaf0; }
+.mode-options label:has(input:checked) { border-color:#a87316; background:#fff0c5; }
+.mode-options input { width:22px; height:22px; accent-color:#a87316; flex-shrink:0; }
+.mode-options span { font-size:18px; font-weight:800; }
+.mode-options small { display:block; font-size:14px; font-weight:400; margin-top:4px; }
+.camera-action,.camera-controls button { background:#292014; color:#f7d477; border:0; border-radius:12px; padding:12px 20px; font-size:17px; font-weight:700; cursor:pointer; }
+.capture-actions { display:flex; gap:15px; align-items:center; flex-wrap:wrap; margin:14px 0; }
+.camera-panel { margin:14px 0; padding:14px; background:#211a0e; border-radius:15px; }
+.camera-panel[hidden],[hidden] { display:none !important; }
+.camera-panel video { display:block; width:100%; max-height:380px; object-fit:contain; }
+.camera-controls { display:flex; gap:12px; justify-content:center; margin-top:12px; }
+input:focus,select:focus,textarea:focus { outline:3px solid rgba(184,132,31,.24); border-color:#a87316 !important; }
+@media(max-width:650px) { .mode-options { grid-template-columns:1fr; } .registration-mode { padding:18px; } .form-field input,.form-field select { font-size:18px !important; } }
