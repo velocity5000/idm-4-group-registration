@@ -33,6 +33,9 @@
       .payment-account-details{min-height:92px;margin:0 0 18px;padding:16px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;text-align:left;font-size:13px;line-height:1.8;color:#374151;overflow-wrap:anywhere}
       .payment-account-details strong{color:#111827}
       .payment-method img{width:min(100%,260px);height:auto;max-height:280px;object-fit:contain;margin:8px auto 0}
+      .payment-methods{grid-template-columns:minmax(0,720px);justify-content:center}
+      .payment-method{width:100%;max-width:720px;margin:0 auto}
+      .payment-method img{width:min(100%,320px);max-height:320px}
       .upload-panel{margin-top:30px;padding:26px;border:1px dashed #a5b4fc;background:#f8faff;border-radius:16px;color:#101126}
       .upload-panel label{display:block;margin:0 0 10px;color:#101126;font-size:15px}.upload-panel label span{color:#dc2626}
       .upload-panel p,.upload-panel small{display:block;font-size:13px;line-height:1.7;color:#596176;margin-top:7px}
@@ -375,15 +378,7 @@
                             <img src="images/AUB-qr-code.png" alt="AUB payment QR code" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
                             <p class="qr-missing-note" style="display:none">Add <code>images/AUB-qr-code.png</code> to display this QR code.</p>
                         </div>
-                        <div class="payment-method">
-                            <h3>GCASH QR Code</h3>
-                            <div class="payment-account-details">
-                                <strong>Account Name:</strong> GP Velocity 5000 Management Inc
-                            </div>
-                            <img src="images/gcash-qr-code.jpg" alt="GCash payment QR code" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-                            <p class="qr-missing-note" style="display:none">Add <code>images/gcash-qr-code.jpg</code> to display this QR code.</p>
-                        </div>
-                    </div>
+</div>
 
                     <div class="upload-panel">
                         <label for="paymentProof"><strong>Proof of Payment <span>*</span></strong></label>
