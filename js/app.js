@@ -5,12 +5,22 @@
 
 const MAX_PARTICIPANTS = 11;
 
-const PRICES = {
-    "5K": 899,
-    "10K": 1499,
-    "21K": 1899,
-    "42K": 2199
+const PACKAGE_PRICES = {
+    "5K": { "Without Singlet": 799, "With Singlet": 899 },
+    "10K": { "Without Singlet": 1399, "Without Shirt": 1349, "Without Singlet & Shirt": 1249, "With Both Singlet & Shirt": 1499 },
+    "21K": { "Without Singlet": 1799, "Without Shirt": 1749, "Without Singlet & Shirt": 1649, "With Both Singlet & Shirt": 1899 },
+    "42K": { "Without Singlet": 2099, "Without Shirt": 2049, "Without Singlet & Shirt": 1949, "With Both Singlet & Shirt": 2199 }
 };
+const DISTANCES = ["5K", "10K", "21K", "42K"];
+function parseSelection(value) {
+    const parts = String(value || "").split(" - ");
+    return { distance: (parts[0] || "").replace(/KM?$/i, "K").toUpperCase(), packageName: parts.slice(1).join(" - ") };
+}
+function selectionValue(distance, packageName) { return distance + "KM - " + packageName; }
+function priceForSelection(value) {
+    const x = parseSelection(value);
+    return (PACKAGE_PRICES[x.distance] || {})[x.packageName] || 0;
+}
 
 const SINGLET_SIZES = [
     "2XS", "XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"
@@ -239,38 +249,21 @@ function createParticipant() {
 
 
             <div class="form-field distance-field">
-
-                <label>
-                    Race Distance
-                    <span>*</span>
-                </label>
-
-                <select
-                    class="distance-select"
-                    name="participant_${participantNumber}_distance"
-                    required
-                >
-
-                    <option value="">
-                        Select race distance
-                    </option>
-
-                    <option value="5K">
-                        5K Fun Run — ₱899
-                    </option>
-
-                    <option value="10K">
-                        10K Challenge Run — ₱1,499
-                    </option>
-
-                    <option value="21K">
-                        21K Half Marathon — ₱1,899
-                    </option>
-
-                    <option value="42K">
-                        42K Full Marathon — ₱2,199
-                    </option>
-
+                <label>Package <span>*</span></label>
+                <select class="package-select" name="participant_${participantNumber}_package" required>
+                    <option value="With Both Singlet & Shirt" selected>With Both Singlet & Shirt</option>
+                    <option value="With Singlet">With Singlet (5KM only)</option>
+                    <option value="Without Singlet">Without Singlet</option>
+                    <option value="Without Shirt">Without Shirt</option>
+                    <option value="Without Singlet & Shirt">Without Singlet & Shirt</option>
+                </select>
+            </div>
+            <div class="form-field distance-field">
+                <label>Race Distance <span>*</span></label>
+                <select class="distance-select" name="participant_${participantNumber}_distance" required>
+                    <option value="">Select race distance</option>
+                    <option value="5K">5KM</option><option value="10K">10KM</option>
+                    <option value="21K">21KM</option><option value="42K">42KM</option>
                 </select>
 
             </div>
@@ -378,6 +371,8 @@ function createParticipant() {
     attachParticipantEvents(
         participantCard
     );
+    const initialDistance = participantCard.querySelector(".distance-select");
+    if (initialDistance) initialDistance.dispatchEvent(new Event("change"));
 
     updateParticipantCounter();
     updateAddButton();
@@ -400,19 +395,50 @@ function attachParticipantEvents(card) {
     const shirtSelect =
         shirtField.querySelector("select");
 
-    distanceSelect.addEventListener(
-        "change",
-        () => {
+    const packageSelect = card.querySelector(".package-select");
+    const singletSelect = card.querySelector('select[name$="_singlet"]');
+    const singletField = singletSelect.closest(".form-field");
+    function refreshPackageFields() {
+        const d = distanceSelect.value;
+        const pkg = packageSelect.value;
+        const noSinglet = pkg.includes("Without Singlet");
+        const noShirt = d === "5K" || pkg.includes("Without Shirt");
+        singletSelect.disabled = noSinglet;
+        singletSelect.required = !noSinglet;
+        if (noSinglet) singletSelect.value = "";
+        singletField.classList.toggle("is-disabled", noSinglet);
+        shirtSelect.disabled = noShirt;
+        shirtSelect.required = !noShirt;
+        if (noShirt) shirtSelect.value = "";
+        shirtField.classList.toggle("is-disabled", noShirt);
+        const withoutShirtOption = packageSelect.querySelector('option[value="Without Shirt"]');
+        const withoutBothOption = packageSelect.querySelector('option[value="Without Singlet & Shirt"]');
+        const bothOption = packageSelect.querySelector('option[value="With Both Singlet & Shirt"]');
+        if (withoutShirtOption) withoutShirtOption.disabled = d === "5K";
+        if (withoutBothOption) withoutBothOption.disabled = d === "5K";
+        if (bothOption) { bothOption.disabled = d === "5K"; bothOption.textContent = d === "5K" ? "With Both Singlet & Shirt (not available for 5KM)" : "With Both Singlet & Shirt"; }
+        if (d === "5K" && !["Without Singlet", "With Singlet"].includes(pkg)) packageSelect.value = "With Singlet";
+        if (d !== "5K" && packageSelect.value === "With Singlet") packageSelect.value = "With Both Singlet & Shirt";
 
-            updateFinisherShirt(
-                distanceSelect,
-                shirtField,
-                shirtSelect
-            );
+        // Show the applicable package price beside every race distance.
+        // The price changes automatically when the package selection changes.
+        distanceSelect.querySelectorAll("option").forEach(option => {
+            const distance = option.value;
+            if (!distance) {
+                option.textContent = "Select race distance";
+                return;
+            }
+            const applicablePackage = distance === "5K"
+                ? (packageSelect.value === "Without Singlet" ? "Without Singlet" : "With Singlet")
+                : (packageSelect.value === "With Singlet" ? "With Both Singlet & Shirt" : packageSelect.value);
+            const price = (PACKAGE_PRICES[distance] || {})[applicablePackage];
+            option.textContent = `${distance.replace("K", "KM")} — ${price != null ? "₱" + price.toLocaleString("en-PH") : "Price unavailable"}`;
+        });
 
-            updateSummary();
-        }
-    );
+        updateSummary();
+    }
+    distanceSelect.addEventListener("change", refreshPackageFields);
+    packageSelect.addEventListener("change", refreshPackageFields);
 
 
     card.querySelectorAll(
@@ -473,41 +499,7 @@ function attachParticipantEvents(card) {
    FINISHER SHIRT
    ========================================================= */
 
-function updateFinisherShirt(
-    distanceSelect,
-    shirtField,
-    shirtSelect
-) {
-
-    const distance =
-        distanceSelect.value;
-
-    if (distance === "5K") {
-
-        shirtSelect.disabled = true;
-
-        shirtSelect.required = false;
-
-        shirtSelect.value = "";
-
-        shirtField.classList.add(
-            "is-disabled"
-        );
-
-    } else {
-
-        shirtSelect.disabled = false;
-
-        shirtSelect.required = true;
-
-        shirtField.classList.remove(
-            "is-disabled"
-        );
-
-    }
-
-}
-
+function updateFinisherShirt() { /* Package selection now controls both apparel fields. */ }
 
 /* =========================================================
    REMOVE PARTICIPANT
@@ -708,36 +700,32 @@ function updateAddButton() {
 
 function updateSummary() {
     const counts = {"5K":0,"10K":0,"21K":0,"42K":0};
+    const subtotals = {"5K":0,"10K":0,"21K":0,"42K":0};
+    const prices = [];
     document.querySelectorAll(".distance-select").forEach(select => {
-        if (Object.prototype.hasOwnProperty.call(counts, select.value)) counts[select.value]++;
+        const d = select.value;
+        if (Object.prototype.hasOwnProperty.call(counts, d)) {
+            counts[d]++;
+            const card = select.closest(".participant-card");
+            const pkg = card.querySelector(".package-select").value;
+            const price = (PACKAGE_PRICES[d] || {})[pkg] || 0;
+            subtotals[d] += price;
+            prices.push(price);
+        }
     });
-    const raw = counts["5K"]*PRICES["5K"] + counts["10K"]*PRICES["10K"] + counts["21K"]*PRICES["21K"] + counts["42K"]*PRICES["42K"];
-    const freeCount = Math.floor(Object.values(counts).reduce((a,b)=>a+b,0)/11);
-    let discount = 0;
-    if (freeCount) {
-        const selectedPrices = [];
-        document.querySelectorAll(".distance-select").forEach(select => {
-            if (PRICES[select.value]) selectedPrices.push(PRICES[select.value]);
-        });
-        selectedPrices.sort((a,b)=>a-b);
-        discount = selectedPrices.slice(0,freeCount).reduce((a,b)=>a+b,0);
-    }
+    const raw = Object.values(subtotals).reduce((a,b)=>a+b,0);
+    const freeCount = isIndividualMode() ? 0 : Math.floor(prices.length/11);
+    prices.sort((a,b)=>a-b);
+    const discount = prices.slice(0,freeCount).reduce((a,b)=>a+b,0);
     [["5K","summary5k","subtotal5k"],["10K","summary10k","subtotal10k"],["21K","summary21k","subtotal21k"],["42K","summary42k","subtotal42k"]].forEach(([d,cid,sid])=>{
         document.getElementById(cid).textContent=counts[d];
-        document.getElementById(sid).textContent=formatCurrency(counts[d]*PRICES[d]);
+        document.getElementById(sid).textContent=formatCurrency(subtotals[d]);
     });
     document.getElementById("grandTotal").textContent = formatCurrency(Math.max(0,raw-discount));
-    let discountRow=document.getElementById("groupDiscountRow");
-    if(!discountRow){
-        discountRow=document.createElement("div");
-        discountRow.id="groupDiscountRow";
-        discountRow.className="discount-row";
-        const totalEl=document.querySelector(".summary-total");
-        totalEl.parentNode.insertBefore(discountRow,totalEl);
-    }
-    discountRow.innerHTML=`<span>10+1 group discount (${freeCount} free)</span><strong>−${formatCurrency(discount)}</strong>`;
+    let row=document.getElementById("groupDiscountRow");
+    if(!row){row=document.createElement("div");row.id="groupDiscountRow";row.className="discount-row";const total=document.querySelector(".summary-total");total.parentNode.insertBefore(row,total);}
+    row.innerHTML=`<span>10+1 group discount (${freeCount} free)</span><strong>−${formatCurrency(discount)}</strong>`;
 }
-
 
 /* =========================================================
    FORMAT CURRENCY
@@ -1368,6 +1356,8 @@ function collectReservationData() {
             return field ? String(field.value || '').trim() : '';
         };
         const distance = value('distance');
+        const packageName = value('package');
+        const combinedDistance = distance ? selectionValue(distance, packageName) : '';
         return {
             firstName: value('first_name'),
             lastName: value('last_name'),
@@ -1377,9 +1367,9 @@ function collectReservationData() {
             address: value('address'),
             emergencyContactName: isIndividualMode() ? document.getElementById('groupEmergencyName').value.trim() : '',
             emergencyContactNumber: isIndividualMode() ? document.getElementById('groupEmergencyNumber').value.trim() : '',
-            distance,
+            distance: combinedDistance,
             singletSize: value('singlet'),
-            finisherShirtSize: distance === '5K' ? '' : value('shirt'),
+            finisherShirtSize: value('shirt'),
             bibName: value('bib_name')
         };
     });
@@ -1397,13 +1387,14 @@ function collectReservationData() {
     };
 }
 function getGroupPricing() {
-    const distances=Array.from(document.querySelectorAll(".distance-select")).map(s=>s.value).filter(Boolean);
-    const raw=distances.reduce((sum,d)=>sum+(PRICES[d]||0),0);
-    const freeCount=isIndividualMode() ? 0 : Math.floor(distances.length/11);
-    const prices=distances.map(d=>PRICES[d]).sort((a,b)=>a-b);
-    const discount=prices.slice(0,freeCount).reduce((sum,p)=>sum+p,0);
-    return {rawTotal:raw,freeCount,discount,total:raw-discount};
+    const cards=Array.from(document.querySelectorAll(".participant-card"));
+    const prices=cards.map(card=>priceForSelection(selectionValue(card.querySelector(".distance-select").value,card.querySelector(".package-select").value))).filter(Boolean);
+    const rawTotal=prices.reduce((a,b)=>a+b,0);
+    const freeCount=isIndividualMode()?0:Math.floor(prices.length/11);
+    const discount=prices.slice().sort((a,b)=>a-b).slice(0,freeCount).reduce((a,b)=>a+b,0);
+    return {rawTotal,freeCount,discount,total:rawTotal-discount};
 }
+
 function createGroupRegistrationId() {
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let randomPart = "";
