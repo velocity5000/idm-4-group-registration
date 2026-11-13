@@ -16,7 +16,12 @@ function parseSelection(value) {
     const parts = String(value || "").split(" - ");
     return { distance: (parts[0] || "").replace(/KM?$/i, "K").toUpperCase(), packageName: parts.slice(1).join(" - ") };
 }
-function selectionValue(distance, packageName) { return distance + "KM - " + packageName; }
+function selectionValue(distance, packageName) {
+    // Distance values are stored as 5K/10K/21K/42K in the form;
+    // convert them to 5KM/10KM/21KM/42KM without duplicating the K.
+    const distanceLabel = String(distance || "").toUpperCase().replace(/KM?$/i, "") + "KM";
+    return distanceLabel + " - " + packageName;
+}
 function priceForSelection(value) {
     const x = parseSelection(value);
     return (PACKAGE_PRICES[x.distance] || {})[x.packageName] || 0;
@@ -400,9 +405,27 @@ function attachParticipantEvents(card) {
     const singletField = singletSelect.closest(".form-field");
     function refreshPackageFields() {
         const d = distanceSelect.value;
+        // First normalize the package for the selected distance. Only then
+        // calculate apparel requirements, so a distance change cannot leave
+        // stale enabled/disabled states from the previous package.
+        const withoutShirtOption = packageSelect.querySelector('option[value="Without Shirt"]');
+        const withoutBothOption = packageSelect.querySelector('option[value="Without Singlet & Shirt"]');
+        const bothOption = packageSelect.querySelector('option[value="With Both Singlet & Shirt"]');
+        if (withoutShirtOption) withoutShirtOption.disabled = d === "5K";
+        if (withoutBothOption) withoutBothOption.disabled = d === "5K";
+        if (bothOption) {
+            bothOption.disabled = d === "5K";
+            bothOption.textContent = d === "5K" ? "With Both Singlet & Shirt (not available for 5KM)" : "With Both Singlet & Shirt";
+        }
+        if (d === "5K" && !["Without Singlet", "With Singlet"].includes(packageSelect.value)) {
+            packageSelect.value = "With Singlet";
+        } else if (d !== "5K" && packageSelect.value === "With Singlet") {
+            packageSelect.value = "With Both Singlet & Shirt";
+        }
+
         const pkg = packageSelect.value;
-        const noSinglet = pkg.includes("Without Singlet");
-        const noShirt = d === "5K" || pkg.includes("Without Shirt");
+        const noSinglet = pkg === "Without Singlet" || pkg === "Without Singlet & Shirt";
+        const noShirt = d === "5K" || pkg === "Without Shirt" || pkg === "Without Singlet & Shirt";
         singletSelect.disabled = noSinglet;
         singletSelect.required = !noSinglet;
         if (noSinglet) singletSelect.value = "";
@@ -411,14 +434,6 @@ function attachParticipantEvents(card) {
         shirtSelect.required = !noShirt;
         if (noShirt) shirtSelect.value = "";
         shirtField.classList.toggle("is-disabled", noShirt);
-        const withoutShirtOption = packageSelect.querySelector('option[value="Without Shirt"]');
-        const withoutBothOption = packageSelect.querySelector('option[value="Without Singlet & Shirt"]');
-        const bothOption = packageSelect.querySelector('option[value="With Both Singlet & Shirt"]');
-        if (withoutShirtOption) withoutShirtOption.disabled = d === "5K";
-        if (withoutBothOption) withoutBothOption.disabled = d === "5K";
-        if (bothOption) { bothOption.disabled = d === "5K"; bothOption.textContent = d === "5K" ? "With Both Singlet & Shirt (not available for 5KM)" : "With Both Singlet & Shirt"; }
-        if (d === "5K" && !["Without Singlet", "With Singlet"].includes(pkg)) packageSelect.value = "With Singlet";
-        if (d !== "5K" && packageSelect.value === "With Singlet") packageSelect.value = "With Both Singlet & Shirt";
 
         // Show the applicable package price beside every race distance.
         // The price changes automatically when the package selection changes.
@@ -1407,49 +1422,58 @@ function createGroupRegistrationId() {
     }
     return "IDM27-GR-" + Date.now().toString(36).toUpperCase() + randomPart;
 }
-function checkSubmissionStatus(registrationId) {
+function getSubmissionStatus(registrationId) {
     return new Promise((resolve, reject) => {
         const callbackName = "idmStatusCallback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
         const script = document.createElement("script");
-        const cleanup = () => {
-            delete window[callbackName];
-            if (script.parentNode) script.parentNode.removeChild(script);
-        };
-        const timer = setTimeout(() => {
+        const timeout = setTimeout(() => {
             cleanup();
-            reject(new Error("Could not confirm the registration status. Please check before resubmitting."));
+            reject(new Error("Timed out while checking the registration save status."));
         }, 12000);
-        window[callbackName] = (result) => {
-            clearTimeout(timer);
+        function cleanup() {
+            clearTimeout(timeout);
+            delete window[callbackName];
+            script.remove();
+        }
+        window[callbackName] = payload => {
             cleanup();
-            resolve(result || { state: "pending" });
+            resolve(payload || {});
         };
         script.onerror = () => {
-            clearTimeout(timer);
             cleanup();
-            reject(new Error("Unable to contact the registration server."));
+            reject(new Error("Could not contact the registration status service."));
         };
-        script.src = BACKEND_URL + "?action=status&id=" + encodeURIComponent(registrationId) + "&callback=" + callbackName + "&_=" + Date.now();
+        const url = new URL(BACKEND_URL);
+        url.searchParams.set("action", "status");
+        url.searchParams.set("id", registrationId);
+        url.searchParams.set("callback", callbackName);
+        script.src = url.toString();
         document.head.appendChild(script);
     });
 }
-
-async function waitForRegistrationSave(registrationId) {
-    const deadline = Date.now() + 120000;
-    while (Date.now() < deadline) {
-        const status = await checkSubmissionStatus(registrationId);
-        if (status.state === "saved" && status.success) return status;
-        if (status.state === "failed" || status.success === false) {
-            throw new Error(status.error || "The registration could not be saved.");
+async function waitForRegistrationSave(registrationId, maxWaitMs = 90000) {
+    const started = Date.now();
+    let lastStatus = null;
+    while (Date.now() - started < maxWaitMs) {
+        try {
+            lastStatus = await getSubmissionStatus(registrationId);
+            if (lastStatus.state === "saved" && lastStatus.success === true) return lastStatus;
+            if (lastStatus.state === "failed" || lastStatus.success === false) {
+                throw new Error(lastStatus.error || "The server could not save this registration.");
+            }
+        } catch (error) {
+            if (error && error.message && !error.message.includes("status service") &&
+                !error.message.includes("Timed out")) throw error;
         }
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 1800));
     }
-    throw new Error("The server has not confirmed the save yet. Please keep your Registration ID and contact the organizer before submitting again.");
+    throw new Error("The registration save could not be confirmed. Do not submit again yet. Check the registration sheet or contact the organizer using your Registration ID: " + registrationId);
 }
-
 async function submitGroupToBackend(data) {
     data.paymentProofFiles = await Promise.all(selectedProofFiles.map(readFileAsBase64));
     data.pricing = getGroupPricing();
+    // The browser cannot read an Apps Script POST response cross-origin. We therefore
+    // send the POST, then verify the server-side status through the JSONP status endpoint.
     await fetch(BACKEND_URL, {
         method: "POST",
         mode: "no-cors",
@@ -1459,26 +1483,53 @@ async function submitGroupToBackend(data) {
     return await waitForRegistrationSave(data.groupRegistrationId);
 }
 async function handleGroupSubmit(event) {
-    if(event)event.preventDefault(); if(isSubmitting)return;
-    if(!validateReservation()){showToast("Please complete all required fields before submitting.");return;}
-    if(selectedProofFiles.length<1){showToast("Please upload your proof of payment.");paymentProofInput.focus();return;}
-    const totalBytes=selectedProofFiles.reduce((sum,file)=>sum+file.size,0);
-    if(selectedProofFiles.length>3||totalBytes>MAX_UPLOAD_BYTES){showToast("Please check the proof-of-payment file limits.");return;}
-    const data=collectReservationData();
-    data.groupRegistrationId=createGroupRegistrationId();
-    isSubmitting=true;submitRegistrationBtn.disabled=true;
-    const original=submitRegistrationBtn.innerHTML;submitRegistrationBtn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Submitting Registration...';
+    if (event) event.preventDefault();
+    if (isSubmitting) return;
+    if (!validateReservation()) {
+        showToast("Please complete all required fields before submitting.");
+        return;
+    }
+    const invalidSelection = Array.from(document.querySelectorAll(".participant-card")).find(card => {
+        const d = card.querySelector(".distance-select").value;
+        const pkg = card.querySelector(".package-select").value;
+        return !d || !pkg || !Object.prototype.hasOwnProperty.call(PACKAGE_PRICES[d] || {}, pkg);
+    });
+    if (invalidSelection) {
+        showToast("Please select a valid race distance and package for every participant.");
+        invalidSelection.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+    }
+    if (selectedProofFiles.length < 1) {
+        showToast("Please upload your proof of payment.");
+        paymentProofInput.focus();
+        return;
+    }
+    const totalBytes = selectedProofFiles.reduce((sum, file) => sum + file.size, 0);
+    if (selectedProofFiles.length > MAX_UPLOAD_FILES || totalBytes > MAX_UPLOAD_BYTES) {
+        showToast("Please check the proof-of-payment file limits.");
+        return;
+    }
+    const data = collectReservationData();
+    data.groupRegistrationId = createGroupRegistrationId();
+    isSubmitting = true;
+    submitRegistrationBtn.disabled = true;
+    const original = submitRegistrationBtn.innerHTML;
+    submitRegistrationBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting Registration...';
     showToast("Submitting registration. Please wait...");
     try {
-        await submitGroupToBackend(data);
-        document.getElementById("submittedGroupId").textContent=data.groupRegistrationId;
-        const resultPanel=document.getElementById("submissionResult");
+        const savedResult = await submitGroupToBackend(data);
+        document.getElementById("submittedGroupId").textContent = savedResult.groupRegistrationId || data.groupRegistrationId;
+        const resultPanel = document.getElementById("submissionResult");
         resultPanel.classList.add("is-visible");
-        resultPanel.scrollIntoView({behavior:"smooth",block:"center"});
-        showToast("Submission request sent. Keep your Group Registration ID.");
-        submitRegistrationBtn.innerHTML='<i class="fa-solid fa-check"></i> Registration Submitted';
-    } catch(error) {
-        console.error(error);isSubmitting=false;submitRegistrationBtn.disabled=false;submitRegistrationBtn.innerHTML=original;showToast("We couldn't prepare the submission. Please try again.");
+        resultPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+        showToast("Registration saved successfully. Keep your Registration ID.");
+        submitRegistrationBtn.innerHTML = '<i class="fa-solid fa-check"></i> Registration Submitted';
+    } catch (error) {
+        console.error("IDM registration submission failed:", error);
+        isSubmitting = false;
+        submitRegistrationBtn.disabled = false;
+        submitRegistrationBtn.innerHTML = original;
+        showToast(error && error.message ? error.message : "We couldn't confirm that the registration was saved. Please check before retrying.");
     }
 }
 submitRegistrationBtn.addEventListener("click",handleGroupSubmit);
@@ -1561,6 +1612,8 @@ function applyRegistrationMode() {
         while (document.querySelectorAll('.participant-card').length > 1) {
             document.querySelectorAll('.participant-card')[1].remove();
         }
+        renumberParticipants();
+        participantNumber = document.querySelectorAll('.participant-card').length;
         moveIndividualContactFields();
         syncIndividualContact();
         participantHeading.querySelector('.section-kicker').textContent = 'INDIVIDUAL REGISTRATION';
