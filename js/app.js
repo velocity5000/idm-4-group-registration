@@ -1407,10 +1407,56 @@ function createGroupRegistrationId() {
     }
     return "IDM27-GR-" + Date.now().toString(36).toUpperCase() + randomPart;
 }
+function checkSubmissionStatus(registrationId) {
+    return new Promise((resolve, reject) => {
+        const callbackName = "idmStatusCallback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+        const script = document.createElement("script");
+        const cleanup = () => {
+            delete window[callbackName];
+            if (script.parentNode) script.parentNode.removeChild(script);
+        };
+        const timer = setTimeout(() => {
+            cleanup();
+            reject(new Error("Could not confirm the registration status. Please check before resubmitting."));
+        }, 12000);
+        window[callbackName] = (result) => {
+            clearTimeout(timer);
+            cleanup();
+            resolve(result || { state: "pending" });
+        };
+        script.onerror = () => {
+            clearTimeout(timer);
+            cleanup();
+            reject(new Error("Unable to contact the registration server."));
+        };
+        script.src = BACKEND_URL + "?action=status&id=" + encodeURIComponent(registrationId) + "&callback=" + callbackName + "&_=" + Date.now();
+        document.head.appendChild(script);
+    });
+}
+
+async function waitForRegistrationSave(registrationId) {
+    const deadline = Date.now() + 120000;
+    while (Date.now() < deadline) {
+        const status = await checkSubmissionStatus(registrationId);
+        if (status.state === "saved" && status.success) return status;
+        if (status.state === "failed" || status.success === false) {
+            throw new Error(status.error || "The registration could not be saved.");
+        }
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    throw new Error("The server has not confirmed the save yet. Please keep your Registration ID and contact the organizer before submitting again.");
+}
+
 async function submitGroupToBackend(data) {
-    data.paymentProofFiles=await Promise.all(selectedProofFiles.map(readFileAsBase64));
-    data.pricing=getGroupPricing();
-    await fetch(BACKEND_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data)});
+    data.paymentProofFiles = await Promise.all(selectedProofFiles.map(readFileAsBase64));
+    data.pricing = getGroupPricing();
+    await fetch(BACKEND_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(data)
+    });
+    return await waitForRegistrationSave(data.groupRegistrationId);
 }
 async function handleGroupSubmit(event) {
     if(event)event.preventDefault(); if(isSubmitting)return;
