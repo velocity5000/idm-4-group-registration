@@ -453,7 +453,15 @@ function attachParticipantEvents(card) {
         updateSummary();
     }
     distanceSelect.addEventListener("change", refreshPackageFields);
-    packageSelect.addEventListener("change", refreshPackageFields);
+
+    // The 5KM-only singlet package can be selected before choosing a distance.
+    // Selecting it automatically sets the race distance to 5KM.
+    packageSelect.addEventListener("change", () => {
+        if (packageSelect.value === "With Singlet") {
+            distanceSelect.value = "5K";
+        }
+        refreshPackageFields();
+    });
 
 
     card.querySelectorAll(
